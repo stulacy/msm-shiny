@@ -140,8 +140,6 @@ server <- function(input, output) {
         })
     })
 
-    # TODO Histograms of selected covariates?
-
     ############################### States ############################################################
     transitions <- reactiveValues()
 
@@ -195,18 +193,6 @@ server <- function(input, output) {
         to <- which(states() == input$transto)
         transitions[[paste(from, to, sep='-')]] <- list(from=from, to=to, index=new_index)
     })
-
-    output$currtransheader <- renderUI({
-        txt <- if (length(reactiveValuesToList(transitions)) >= 1) 'Current transitions' else ''
-        h4(txt)
-    })
-
-    output$currtrans <- renderTable({
-        from <- sapply(reactiveValuesToList(transitions), function(x) states()[x$from])
-        to <- sapply(reactiveValuesToList(transitions), function(x) states()[x$to])
-        data.frame(From=from, To=to)
-    })
-
 
     states <- reactive({
         if (is.null(all_df()) || is.null(input$updatestartbutton))
@@ -409,14 +395,15 @@ server <- function(input, output) {
 
     # TODO Add ability to delete transitions
 
-    # TODO Maybe use index more often than just going through length(transitions). Check that order I added
+    # Maybe use index more often than just going through length(transitions). Check that order I added
     # transitions doesn't matter. This shouldn't be an issue at the moment as the index is the same as the order they are added in, but
     # when removing states is implemented then this will change.
     modelstrata <- renderUI({
-        item_list <- list(header=h4("Specify strata"))
+        item_list <- list()
+        item_list[['header']] <- h4("Specify strata")
         for (i in names(transitions)) {
             ind <- transitions[[i]]$index
-            item_list[[ind]] <- selectInput(paste0("strata", ind), label=paste(states()[transitions[[i]]$from],
+            item_list[[i]] <- selectInput(paste0("strata", ind), label=paste(states()[transitions[[i]]$from],
                                                                              states()[transitions[[i]]$to],
                                                                              sep=' to '),
                                             choices=seq_along(reactiveValuesToList(transitions)),
@@ -701,7 +688,8 @@ server <- function(input, output) {
         # Obtain values of coefficients
         coef_vals <- lapply(mods, function(mod) coef(mod)[all_coefs])
         comp_df <- data.frame(Coefficient = all_coefs)
-        cbind(comp_df, data.frame(coef_vals))
+        cbind(comp_df, data.frame(coef_vals)) %>%
+            arrange(Coefficient)
     })
 
     ### Functions for survival comparison
@@ -1076,7 +1064,7 @@ server <- function(input, output) {
                                       "';")}),
                                collapse='\n')
 
-            timer_dot <- paste0("'Current time: ", round(curr_time, 2),
+            timer_dot <- paste0("'Current time: ", round(curr_time),
                                 "' [shape=plaintext, style='', fontsize=15]\n")
             full <- paste("digraph states {", states_dot, edges_dot, timer_dot, "}")
 

@@ -25,9 +25,7 @@ ui <- fluidPage(
                              uiOutput("transwarning"),
                              uiOutput("updatestartingstate"),
                              uiOutput("seltrans"),
-                             uiOutput("addtrans"),
-                             uiOutput("currtransheader"),
-                             uiOutput("currtrans")
+                             uiOutput("addtrans")
                              ),
             conditionalPanel(condition="input.selectedtab==3",
                              h4("Modelling transition hazards"),
@@ -61,7 +59,9 @@ ui <- fluidPage(
                                  value=3),
                         tabPanel("Model Comparison",
                                  verbatimTextOutput("modelsummary"),
+                                 hr(),
                                  tableOutput("coefficientcomparison"),
+                                 hr(),
                                  plotOutput("curvecomparison"),
                                  value=4),
                         tabPanel("Prediction",
