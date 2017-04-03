@@ -347,13 +347,41 @@ server <- function(input, output) {
         do.call(tagList, item_list)
     })
 
+    mean_survival <- reactiveValues()
+
     observeEvent(input$savemodelbutton, {
         if (input$modelname == '') {
             message("Please enter a name for the model!")
             return()
         }
-        models[[input$modelname]] <- mod()
-        display_save_button$display <- FALSE
+
+        withProgress(message="Saving model...", {
+
+            this_model <- mod()
+            models[[input$modelname]] <- this_model
+            display_save_button$display <- FALSE
+
+            # Calculate mean survival curve for each model and save
+            mods <- reactiveValuesToList(models)
+            # Add KM
+            if (length(mods) == 1) {
+                mean_survival[['km']] <- get_km_estimate()
+            }
+
+            # Calculate mean survival curve for this model
+            mean_data <- calculate_mean_covariates()
+
+            newdf_wide <- convert_wide_to_long(mean_data$covars, this_model$transitions, mean_data$arrival)
+            raw_probs <- predict_transition(this_model, newdata=newdf_wide, times=mean_survival[['km']]$time, split_sinks=FALSE)
+            # Filter where source = starting state and the target is the sink state
+            probs <- raw_probs %>%
+                        filter(source == starting_state(),
+                               target == get_sink_states(Q())[1]) %>%
+                        select(time, surv=prob) %>%
+                        mutate(surv = 1 - surv)  # Since we want survival probability rather than prob of being dead
+
+            mean_survival[[input$modelname]] <- probs
+        })
     })
 
     modelcovars <- renderUI({
@@ -677,6 +705,7 @@ server <- function(input, output) {
     })
 
     ### Functions for survival comparison
+    # TODO Does this need to be reactive or can a general function work?
     get_km_estimate <- reactive({
         # Obtain sink state (get first name if multiple)
         sink_state <- get_sink_states(Q())[1]
@@ -687,83 +716,62 @@ server <- function(input, output) {
         colnames(this_df) <- c('time', 'status')
 
         km_estimate <- survfit(Surv(time, status) ~ 1, data=this_df)
-        data.frame(method='km', time=km_estimate$time, surv=km_estimate$surv)
+        data.frame(time=km_estimate$time, surv=km_estimate$surv)
     })
 
     output$curvecomparison <- renderPlot({
 
-        withProgress(message="Estimating survival probability...", {
-            mods <- reactiveValuesToList(models)
-            trans_mat <- Q()
+        # Combine with KM estimates and plot
+        curves <- reactiveValuesToList(mean_survival)
+        if (length(curves) < 1)
+            return()
 
-            raw_df <- proc_df()
-
-            if (length(mods) < 1)
-                return()
-
-            km <- get_km_estimate()
-
-            # Now to get the probabilities for each of the models
-            # Make a new data frame comprising an 'average' individual from the data set
-            sel_covar <- input$selcovar
-            new_list <- setNames(lapply(sel_covar, function(var) {
-                col <- raw_df[[var]]
-                if (get_var_type(var, raw_df) == 'continuous') {
-                    mean(col, na.rm=T)
-                } else {
-                    # This is the modal value
-                    unique(col)[which.max(table(col))]
-                }
-            }), sel_covar)
-
-            # add mean arrival times just in case
-            arrival_trans <- state_arrivals()
-            if (length(arrival_trans) > 0) {
-                arrival_states <- unique(sapply(arrival_trans, function(id) {
-                    coords <- which(trans_mat == id, arr.ind=T)
-                    coords[1]
-                }))
-
-                mean_arrival_time <- lapply(arrival_states, function(s) {
-                    as.numeric(raw_df %>% filter(from == s) %>% summarise(arrival = mean(Tstart)))
-                })
-
-                arrival_cols <- setNames(mean_arrival_time,
-                                         paste('arrival',
-                                               sapply(arrival_states, function(s) row.names(trans_mat)[s]),
-                                               sep='.'))
-            } else {
-                arrival_cols <- list()
-            }
-
-
-            # Iterate through each model and calculate the survival probabilities at the times in KM for fairness
-            probs <- lapply(mods, function(mod) {
-                # Convert wide to long
-                newdf_wide <- convert_wide_to_long(new_list, mod$transitions, arrival_cols)
-                raw_probs <- predict_transition(mod, newdata=newdf_wide, times=km$time, split_sinks=FALSE)
-                # Filter where source = starting state and the target is the sink state
-                raw_probs %>%
-                        filter(source == starting_state(),
-                               target == get_sink_states(Q())[1]) %>%
-                        select(time, surv=prob) %>%
-                        mutate(surv = 1 - surv)  # Since we want survival probability rather than prob of being dead
-            })
-
-
-            # Combine with KM estimates and plot
-            comb_df <- rbind(km, bind_rows(probs, .id='method'))
-            comb_df
-
-            ggplot(comb_df, aes(x=time, y=surv, colour=method)) +
-                geom_line() +
-                labs(x='Time', y='Survival Probability') +
-                theme_bw()
-        })
+        comb_df <- bind_rows(curves, .id="method")
+        ggplot(comb_df, aes(x=time, y=surv, colour=method)) +
+            geom_line() +
+            labs(x='Time', y='Survival Probability') +
+            theme_bw()
     })
 
     calculate_mean_covariates <- function() {
+        # Now to get the probabilities for each of the models
+        # Make a new data frame comprising an 'average' individual from the data set
 
+        trans_mat <- Q()
+        raw_df <- proc_df()
+
+        sel_covar <- input$selcovar
+        new_list <- setNames(lapply(sel_covar, function(var) {
+            col <- raw_df[[var]]
+            if (get_var_type(var, raw_df) == 'continuous') {
+                mean(col, na.rm=T)
+            } else {
+                # This is the modal value
+                unique(col)[which.max(table(col))]
+            }
+        }), sel_covar)
+
+        # add mean arrival times just in case
+        arrival_trans <- state_arrivals()
+        if (length(arrival_trans) > 0) {
+            arrival_states <- unique(sapply(arrival_trans, function(id) {
+                coords <- which(trans_mat == id, arr.ind=T)
+                coords[1]
+            }))
+
+            mean_arrival_time <- lapply(arrival_states, function(s) {
+                as.numeric(raw_df %>% filter(from == s) %>% summarise(arrival = mean(Tstart)))
+            })
+
+            arrival_cols <- setNames(mean_arrival_time,
+                                     paste('arrival',
+                                           sapply(arrival_states, function(s) row.names(trans_mat)[s]),
+                                           sep='.'))
+        } else {
+            arrival_cols <- list()
+        }
+
+        list(covars=new_list, arrival=arrival_cols)
     }
 
 
@@ -953,8 +961,6 @@ server <- function(input, output) {
                                   mod$arrival)
         # TODO The covariates should be taken from the model
         newdata <- convert_wide_to_long(covars, mod$transitions, arrival_times)
-
-        # TODO Update the use of get_newdata to instead use convert_wide_to_long()
         withProgress(message="Calculating...", {
                      predict_transition(mod, newdata, times) %>%
                         filter(source == starting_state())
