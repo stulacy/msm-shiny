@@ -285,7 +285,7 @@ output$transitioneq <- renderUI({
     item_list <- list()
     item_list[[1]] <- HTML("Estimate the probability of being in state <code>j</code> at time <code>t</code> given entering the system at time 0. I.e.:")
     item_list[[2]] <- withMathJax(
-        helpText("$$P_{1j}(0, t) = P(X(t) == j | X(0) == 1)$$")
+        helpText("$$P_{1j}(0, t) = P(X(t) = j | X(0) = 1)$$")
     )
     do.call(tagList, item_list)
 })
