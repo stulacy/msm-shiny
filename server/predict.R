@@ -214,7 +214,7 @@ convert_wide_to_long <- function(covars, strata, arrival_cols) {
     newd
 }
 
-MAX_TRANSPROB_PREDICTION_TIME <- 1000
+NUM_PREDICTION_TIMEPOINTS <- 1000
 
 transprobs <- eventReactive(input$updatepred, {
     mods <- reactiveValuesToList(models)
@@ -223,7 +223,7 @@ transprobs <- eventReactive(input$updatepred, {
     )
 
     # Calculate all possible times
-    times <- seq(0, max(proc_df()$Tstop), length.out=MAX_TRANSPROB_PREDICTION_TIME)
+    times <- seq(0, max(proc_df()$Tstop), length.out=NUM_PREDICTION_TIMEPOINTS)
 
     mod <- mods[[input$modselectpred]]
 
