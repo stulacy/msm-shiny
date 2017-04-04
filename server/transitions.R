@@ -75,7 +75,6 @@ states <- reactive({
 
 output$statedia <- renderGrViz({
 
-    # TODO Remove if doesn't help. Trying to get UI to refresh when press button
     input$addtrans
 
     edges <- sapply(reactiveValuesToList(transitions), function(x) paste0("'", states()[x$from], "' -> '", states()[x$to], "'"))
@@ -141,7 +140,6 @@ Q_prediction <- function(split_sinks=FALSE){
 
 proc_df <- reactive({
     if (length(reactiveValuesToList(transitions)) > 0) {
-        # TODO Should these calls to all_df instead refer to raw_df
         prepare_data(raw_df(), Q(), input$selcovar, get_time_status_vars(raw_df(), 'time'),
                      get_time_status_vars(raw_df(), 'status'), state_arrivals())
     }

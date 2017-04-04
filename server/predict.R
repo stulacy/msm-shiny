@@ -58,7 +58,7 @@ predict_transition.psmarkov <- function(obj, newdata, times, split_sinks=TRUE) {
     this_states <- row.names(trans_mat)
     sink_states <- get_sink_states(trans_mat)
 
-    # TODO Since this takes more time to run than usual, segment into a maximum
+    # Since this takes more time to run than usual, segment into a maximum
     # number of times
     if (length(times) > max_times) {
         times <- seq(min(times), max(times), length.out=max_times)
@@ -156,7 +156,6 @@ output$newdata <- renderUI({
 
     # Make slider for each of these
     for (col_name in included_arrival_cols) {
-        # TODO calculate mean and max values
         col <- proc_df()[[col_name]]
         item_list[[col_name]] <- sliderInput(paste0('in', col_name), col_name,
                                         min=0,
@@ -168,40 +167,6 @@ output$newdata <- renderUI({
     # Add an input for state arrival term if have added it to the specific model
     do.call(tagList, item_list)
 })
-
-get_newdata <- function(mod) {
-    num_trans <- length(reactiveValuesToList(transitions))
-    newd <- data.frame(trans=seq(num_trans), strata=mod$transitions)
-    class(newd) <- c(class(newd), "msdata")
-    attr(newd, "trans") <- Q()
-
-    # TODO Get this from the inputs not from anything else
-    if (length(input$selcovar) > 0) {
-        for (i in input$selcovar) {
-            col <- rep(input[[paste0('in', i)]], num_trans)
-            var_type <- get_var_type(i, all_df())
-            if (var_type == 'continuous') {
-                col <- as.numeric(col)
-            } else if (var_type == 'categorical') {
-                col <- factor(col, levels=levels(all_df()[[i]]))
-            }
-            newd[[i]] <- col
-        }
-        newd <- expand.covs(newd, input$selcovar)
-    }
-
-    # TODO Get state arrival times too
-
-    # Add variable to indicate the source states if have two proportional baseline hazards
-    #strata_list <- sapply(seq_along(transitions), function(i) input[[paste0('strata', i)]])
-    strata_list <- mod$transitions
-    if (anyDuplicated(strata_list)) {
-        ref_value <- which(duplicated(strata_list))
-        new_var <- paste0('trans.', ref_value)
-        newd[[new_var]] <- as.numeric(newd$trans == ref_value)
-    }
-    newd
-}
 
 # Converts a wide data frame to long, as well as setting up the required class so that
 # it can be used with mstate
@@ -249,18 +214,15 @@ convert_wide_to_long <- function(covars, strata, arrival_cols) {
     newd
 }
 
-
 MAX_TRANSPROB_PREDICTION_TIME <- 1000
 
 transprobs <- eventReactive(input$updatepred, {
     mods <- reactiveValuesToList(models)
-    # TODO Specify model from a dropdown
     validate(
         need(length(mods) >= 1, "Please build a model before attempting to predict transition probabilities")
     )
 
     # Calculate all possible times
-    # TODO Obtain more sensible values here
     times <- seq(0, max(proc_df()$Tstop), length.out=MAX_TRANSPROB_PREDICTION_TIME)
 
     mod <- mods[[input$modselectpred]]
@@ -271,7 +233,6 @@ transprobs <- eventReactive(input$updatepred, {
 
     arrival_times <- setNames(lapply(mod$arrival, function (a) input[[paste0('in', a)]]),
                               mod$arrival)
-    # The covariates should be taken from the model
     newdata <- convert_wide_to_long(covars, mod$transitions, arrival_times)
     withProgress(message="Calculating...", {
                  predict_transition(mod, newdata, times) %>%
