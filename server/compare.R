@@ -3,9 +3,7 @@ output$modelselect <- renderUI({
     if (length(mods) < 1)
         return(h5("Please save models in the previous tab"))
 
-    item_list <- list(h5("View saved models here and compare them on both hazard ratios and predictions"),
-                      selectInput("modselect", "Select model", choices=names(mods)))
-    do.call(tagList, item_list)
+    selectInput("modselect", "Select model", choices=names(mods))
 })
 
 output$modelsummary <- renderPrint({

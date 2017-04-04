@@ -5,8 +5,6 @@ output$modelcontent <- renderUI({
         return(h5("Please define state transitions before attempting to build a model of the transition hazards."))
     } else {
         item_list <- list(
-                h5("Building regression models for the transition hazards."),
-                hr(),
                 modelcovars,
                 modelstrata,
                 modeltype,

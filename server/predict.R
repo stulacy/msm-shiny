@@ -377,7 +377,7 @@ output$animation <- renderGrViz({
                                             fill <- paste0(COLORSCHEME$fill, ";", blue_ratio, ":white")
                                         }
                                         paste0("'", row['target'], "'", # Important to put the name in quotes in case of space
-                                               " [fillcolor='", fill, "', penwidth=2]")
+                                               " [fillcolor='", fill, "']")
                                         }),
                                    collapse='\n'),
                             sep='\n')
@@ -387,7 +387,7 @@ output$animation <- renderGrViz({
                            paste0("'", row.names(trans_mat)[row[1]],
                                   "' -> '",
                                   colnames(trans_mat)[row[2]],
-                                  "';")}),
+                                  "' [penwidth=2];")}),
                            collapse='\n')
 
         timer_dot <- paste0("'Current time: ", round(curr_time),

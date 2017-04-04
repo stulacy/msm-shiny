@@ -2,22 +2,20 @@ tabPanel("Prognosis",
     sidebarLayout(
         sidebarPanel(
                      h4("Transition Probabilities"),
-                     h5("Predict transition probabilities for new patients"),
+                     h5("Predict transition probabilities for new individuals."),
                      uiOutput("transitioneq"),
             conditionalPanel(condition="input.predicttab==1",
-                             h2("IN SURVIVAL")
+                             uiOutput("predmodelselect"),
+                             uiOutput("newdata"),
+                             uiOutput("plotpredbutton")
                              ),
             conditionalPanel(condition="input.predicttab==2",
-                             h2("IN ANIMATION")
-                             ),
-                     uiOutput("predmodelselect"),
-                     uiOutput("newdata"),
-                     uiOutput("plotpredbutton"),
-                     uiOutput("animationparams")
+                             uiOutput("animationparams")
+                             )
                     ),
         mainPanel(
             tabsetPanel(
-                tabPanel("Survival curve",
+                tabPanel("Transition probability curves",
                          br(),
                          plotOutput("plotprob"),
                          value=1

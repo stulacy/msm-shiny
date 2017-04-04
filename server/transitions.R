@@ -16,8 +16,11 @@ output$transwarning <- renderUI({
 })
 
 output$updatestartingstate <- renderUI({
+    #if (length(states()) < 1)
+    #    return()
+    
     item_list <- list()
-    item_list[[1]] <- textInput("startstate", "Starting State Name", value="starting")
+    item_list[[1]] <- textInput("startstate", "Initial state name", value="starting")
     item_list[[2]] <- actionButton("updatestartbutton", "Update")
     item_list[[3]] <- hr()
     do.call(tagList, item_list)
@@ -76,15 +79,10 @@ output$statedia <- renderGrViz({
     input$addtrans
 
     edges <- sapply(reactiveValuesToList(transitions), function(x) paste0("'", states()[x$from], "' -> '", states()[x$to], "'"))
-    edge_vals <- sapply(reactiveValuesToList(transitions), function(x) x$index)
-
     states_dot <- paste("node [shape=circle, penwidth=2, fixedsize=true, width=1.5, height=1.5, fontcolor='#666666', fontname=Helvetica, fontsize=15]",
                         paste0("'", states(), "'", collapse='\n'),
                         sep='\n')
-    edges_dot <- paste(
-                       mapply(function(e, v)
-                             paste(e, "[label='", v, "', penwidth=2]"), edges, edge_vals),
-                       collapse=" \n ")
+    edges_dot <- paste(edges, "[penwidth=2]", collapse='\n')
 
     full <- paste("digraph states {", states_dot, edges_dot, "}")
     grViz(full)
