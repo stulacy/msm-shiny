@@ -19,17 +19,17 @@ tabPanel("Model Comparison",
              ),
              mainPanel(
                  tabsetPanel(
-                     tabPanel("Summary",
+                     tabPanel("Single model summary",
                              br(),
                              verbatimTextOutput("modelsummary"),
                              value=1
                      ),
-                     tabPanel("Coefficients",
+                     tabPanel("Coefficient comparison",
                               br(),
                               tableOutput("coefficientcomparison"),
                               value=2
                      ),
-                     tabPanel("Curve",
+                     tabPanel("Survival curve comparison",
                               br(),
                               plotOutput("curvecomparison"),
                               vlaue=3
