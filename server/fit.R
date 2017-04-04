@@ -152,7 +152,7 @@ state_arrivals <- reactive({
     # Finds transient states
     transient_states <- (rowSums(trans_mat, na.rm=T) > 0) & (colSums(trans_mat, na.rm=T) > 0)
     # Find all transitions that these states are the source of. Returns a vector of transition ids
-    trans_ids <- trans_mat[transient_states, !is.na(trans_mat[transient_states, ])]
+    trans_ids <- trans_mat[transient_states, ][!is.na(trans_mat[transient_states, ])]
     trans_ids
 })
 
@@ -224,7 +224,7 @@ mod <- eventReactive(input$buildmodelbutton, {
 
         curr_data <- curr_data %>% filter(!(time == 0 & status == 0))
         model <- model_constructors[[input$modeltype]]$func(surv_form, covar_form, curr_data, semi_markov)
-        stratas <- sapply(seq_along(transitions), function(i) input[[paste0('strata', i)]])
+        stratas <- sapply(seq_along(trans_list), function(i) input[[paste0('strata', i)]])
         model$transitions <- stratas
         model$arrival <- arrival_cols
         model$covars <- input$selcovar

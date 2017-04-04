@@ -78,12 +78,12 @@ output$statedia <- renderGrViz({
     edges <- sapply(reactiveValuesToList(transitions), function(x) paste0("'", states()[x$from], "' -> '", states()[x$to], "'"))
     edge_vals <- sapply(reactiveValuesToList(transitions), function(x) x$index)
 
-    states_dot <- paste("node [shape=circle, fixedsize=true, width=1.5, height=1.5, fontsize=12]",
+    states_dot <- paste("node [shape=circle, penwidth=2, fixedsize=true, width=1.5, height=1.5, fontcolor='#666666', fontname=Helvetica, fontsize=15]",
                         paste0("'", states(), "'", collapse='\n'),
                         sep='\n')
     edges_dot <- paste(
                        mapply(function(e, v)
-                             paste(e, "[label='", v, "']"), edges, edge_vals),
+                             paste(e, "[label='", v, "', penwidth=2]"), edges, edge_vals),
                        collapse=" \n ")
 
     full <- paste("digraph states {", states_dot, edges_dot, "}")

@@ -271,7 +271,7 @@ transprobs <- eventReactive(input$updatepred, {
 
     arrival_times <- setNames(lapply(mod$arrival, function (a) input[[paste0('in', a)]]),
                               mod$arrival)
-    # TODO The covariates should be taken from the model
+    # The covariates should be taken from the model
     newdata <- convert_wide_to_long(covars, mod$transitions, arrival_times)
     withProgress(message="Calculating...", {
                  predict_transition(mod, newdata, times) %>%
@@ -283,7 +283,7 @@ timer <- reactiveValues()
 
 output$transitioneq <- renderUI({
     item_list <- list()
-    item_list[[1]] <- HTML("Estimate the probability of being in state <code>j</code> at time <code>t</code> given entering the system (state 1) at time 0. I.e.:")
+    item_list[[1]] <- HTML("Estimate the probability of being in state <code>j</code> at time <code>t</code> given entering the system at time 0. I.e.:")
     item_list[[2]] <- withMathJax(
         helpText("$$P_{1j}(0, t) = P(X(t) == j | X(0) == 1)$$")
     )
@@ -349,6 +349,7 @@ animation_probs <- eventReactive(input$startanimation, {
 })
 
 PREDICTION_TIME <- 0
+COLORSCHEME <- list(text="#666666", fill="#9cbbd1aa")
 
 output$animation <- renderGrViz({
     probs <- animation_probs()
@@ -364,18 +365,19 @@ output$animation <- renderGrViz({
         trans_mat <- Q_prediction(split_sinks=T)
 
         # Create dot diagram with the buckets getting filled up
-        states_dot <- paste("node [shape=circle, fixedsize=true, width=1.5, height=1.5, fontsize=12, style=filled, gradientangle=90]",
+        states_dot <- paste(paste0("node [shape=circle, fixedsize=true, penwidth=2, width=1.5, height=1.5, fontsize=15, fontname=Helvetica, fontcolor='", COLORSCHEME$text,
+                                   "'style=filled, gradientangle=90]"),
                             paste0(apply(this_df, 1, function(row) {
                                        blue_ratio <- round(as.numeric(row['prob']), 2)
                                         if (blue_ratio == 1) {
-                                            fill <- "blue"
+                                            fill <- COLORSCHEME$fill
                                         } else if (blue_ratio == 0) {
                                             fill <- "white"
                                         } else {
-                                            fill <- paste0("blue;", blue_ratio, ":white")
+                                            fill <- paste0(COLORSCHEME$fill, ";", blue_ratio, ":white")
                                         }
                                         paste0("'", row['target'], "'", # Important to put the name in quotes in case of space
-                                               " [fillcolor='", fill, "']")
+                                               " [fillcolor='", fill, "', penwidth=2]")
                                         }),
                                    collapse='\n'),
                             sep='\n')

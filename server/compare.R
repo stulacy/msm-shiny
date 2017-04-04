@@ -25,11 +25,9 @@ output$coefficientcomparison <- renderTable({
     comp_df <- data.frame(Coefficient = all_coefs)
     cbind(comp_df, data.frame(coef_vals)) %>%
         arrange(Coefficient)
-})
+}, digits=3)
 
-### Functions for survival comparison
-# TODO Does this need to be reactive or can a general function work?
-get_km_estimate <- reactive({
+get_km_estimate <- function(){
     # Obtain sink state (get first name if multiple)
     sink_state <- get_sink_states(Q())[1]
 
@@ -40,10 +38,9 @@ get_km_estimate <- reactive({
 
     km_estimate <- survfit(Surv(time, status) ~ 1, data=this_df)
     data.frame(time=km_estimate$time, surv=km_estimate$surv)
-})
+}
 
 output$curvecomparison <- renderPlot({
-
     # Combine with KM estimates and plot
     curves <- reactiveValuesToList(mean_survival)
     if (length(curves) < 1)
