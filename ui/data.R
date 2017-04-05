@@ -10,10 +10,9 @@ tabPanel("Raw Data",
                      br(),
                      fileInput("filein", "Upload file",
                                accept=c('text/csv', 'text/comma-separated-values,text/plain')),
-                     uiOutput("covarcheck"),
-                     uiOutput("rawobs")
+                     uiOutput("covarcheck")
                     ),
-        mainPanel(tableOutput("rawtable")
+        mainPanel(DT::dataTableOutput("rawtable")
                  )
     )
 )

@@ -36,13 +36,6 @@ output$covarcheck <- renderUI({
     checkboxGroupInput("selcovar", HTML("<h5><strong>Select covariates</strong></h5>"), choices=covar_names)
 })
 
-output$rawobs <- renderUI({
-    if (is.null(raw_df()))
-        return()
-
-    numericInput("rawobs", label=HTML("<h5><strong>Number of observations</strong></h5>"), 10)
-})
-
 output$rawsummary <- renderUI({
     if (is.null(raw_df()))
         return(h5("Select a file containing time-to-event data in the tab on the left."))
@@ -53,12 +46,9 @@ output$rawsummary <- renderUI({
     do.call(tagList, item_list)
 })
 
-output$rawtable <- renderTable({
-   if (is.null(raw_df()) || is.null(input$rawobs))
+output$rawtable <- DT::renderDataTable({
+   if (is.null(raw_df()))
        return()
 
-    isolate({
-        raw_df() %>%
-            head(n=input$rawobs)
-    })
-})
+    raw_df()
+}, rownames=F)
