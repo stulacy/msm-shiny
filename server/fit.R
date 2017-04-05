@@ -243,21 +243,35 @@ build_cox <- function(surv_form, covar_form, data, semi_markov=F) {
     mod
 }
 
-build_parametric <- function(surv_form, covar_form, data, semi_markov=F) {
-    # TODO Somewhere add option to select the distribution
-    sep_char <- if (covar_form == '') '' else '+'
-    full_form <- paste(paste(surv_form, '~', 'strata'),
-                       covar_form, sep=sep_char)
-    mod <- flexsurvreg(as.formula(full_form), anc=list(shape=~ strata), data=data, dist='weibull')
-
-    new_class <- if (semi_markov) 'psmarkov' else 'pmarkov'
-
-    class(mod) <- c(class(mod), new_class)
-    mod
+# Closure to build parametric model of any distribution
+build_parametric <- function(dist) {
+    function(surv_form, covar_form, data, semi_markov=F) {
+        # TODO Somewhere add option to select the distribution
+        sep_char <- if (covar_form == '') '' else '+'
+        full_form <- paste(paste(surv_form, '~', 'strata'),
+                           covar_form, sep=sep_char)
+        mod <- flexsurvreg(as.formula(full_form), anc=list(shape=~ strata), data=data, 
+                           dist=dist)
+    
+        new_class <- if (semi_markov) 'psmarkov' else 'pmarkov'
+    
+        class(mod) <- c(class(mod), new_class)
+        mod
+    }
 }
 
-model_constructors <- list('semi-parametric'=list('long'='Semi-Parametric',
+model_constructors <- list('semi-parametric'=list('long'='Cox',
                                                   func=build_cox),
-                           'parametric' = list('long'='Parametric (Weibull)',
-                                               func=build_parametric)
+                           'exponential' = list('long'='Exponential',
+                                               func=build_parametric('exp')),
+                           'weibull' = list('long'='Weibull',
+                                               func=build_parametric('weibull')),
+                           'loglog' = list('long'='Log-Logistic',
+                                               func=build_parametric('llogis')),
+                           'gamma' = list('long'='Gamma)',
+                                               func=build_parametric('gamma')),
+                           'gompertz' = list('long'='Gompertz',
+                                               func=build_parametric('gompertz')),
+                           'lnorm' = list('long'='Log-Normal',
+                                               func=build_parametric('lnorm'))
                            )
