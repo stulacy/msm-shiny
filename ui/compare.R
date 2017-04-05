@@ -24,12 +24,12 @@ tabPanel("Model Comparison",
                              verbatimTextOutput("modelsummary"),
                              value=1
                      ),
-                     tabPanel("Coefficient comparison",
+                     tabPanel("Coefficients",
                               br(),
                               tableOutput("coefficientcomparison"),
                               value=2
                      ),
-                     tabPanel("Survival curve comparison",
+                     tabPanel("Overall survival",
                               br(),
                               plotOutput("curvecomparison"),
                               vlaue=3
