@@ -1,11 +1,10 @@
-library(shiny)
-library(dplyr)
-library(mstate)
-library(tidyr)
-library(ggplot2)
-library(DiagrammeR)
-library(flexsurv)
-library(stringr)
+if (!require(shiny)) install.packages("shiny")
+if (!require(mstate)) install.packages("mstate")
+if (!require(tidyr)) install.packages("tidyr")
+if (!require(ggplot2)) install.packages("ggplot2")
+if (!require(DiagrammeR)) install.packages("DiagrammeR")
+if (!require(flexsurv)) install.packages("flexsurv")
+if (!require(stringr)) install.packages("stringr")
 
 ui <- navbarPage("Multi-State Modelling",
                  source(file.path("ui", "data.R"), local=T)$value,
