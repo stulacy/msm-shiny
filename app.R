@@ -5,6 +5,7 @@ if (!require(ggplot2)) install.packages("ggplot2")
 if (!require(DiagrammeR)) install.packages("DiagrammeR")
 if (!require(flexsurv)) install.packages("flexsurv")
 if (!require(stringr)) install.packages("stringr")
+if (!require(dplyr)) install.packages("dplyr")
 
 ui <- navbarPage("Multi-State Modelling",
                  source(file.path("ui", "data.R"), local=T)$value,
