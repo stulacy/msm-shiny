@@ -18,7 +18,7 @@ raw_df <- reactive({
     # NB: This won't work if the state times and status columns aren't paired in the original CSV
     time_vars <- get_time_status_vars(all_df(), 'time')
     status_vars <- get_time_status_vars(all_df(), 'status')
-    comb_vars <- as.vector(sapply(seq_along(time_vars), function(i) c(time_vars[i], status_vars[i])))
+    comb_vars <- as.character(sapply(seq_along(time_vars), function(i) c(time_vars[i], status_vars[i])))
 
     cols <- c('id', comb_vars, input$selcovar)
     all_df() %>%
