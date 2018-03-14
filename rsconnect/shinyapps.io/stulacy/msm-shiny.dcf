@@ -1,0 +1,10 @@
+name: msm-shiny
+title:
+username:
+account: stulacy
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 222773
+bundleId: 1014795
+url: https://stulacy.shinyapps.io/msm-shiny/
+when: 1507320132.00759

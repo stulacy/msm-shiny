@@ -1,0 +1,3 @@
+  - Add ability to download / upload saved state transition diagrams, as it can be tedious manually specifying the state layout each the the app is used
+  - Add ability to download / upload saved models
+  - Tests of proportional hazards for Cox Models
