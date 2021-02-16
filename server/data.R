@@ -5,7 +5,8 @@ all_df <- reactive({
         return()
 
     isolate({
-        read.table(infile$datapath, sep=',', header=T)
+        read.table(infile$datapath, sep=',', header=T,
+                   stringsAsFactors = TRUE)
     })
 })
 
